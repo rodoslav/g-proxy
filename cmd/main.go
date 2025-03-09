@@ -5,6 +5,7 @@ import (
 	"g-proxy/config"
 	"g-proxy/ctrl"
 	"g-proxy/proxy"
+	"g-proxy/web"
 	"log"
 	"net/http"
 )
@@ -18,35 +19,30 @@ func main() {
 
 	// Proxy server:
 	proxySrv := http.Server{
-		Addr:         config.ProxyPortTLS,
+		Addr:         config.ProxyPort,
 		Handler:      http.HandlerFunc(proxy.ProxyHandler),
 		TLSNextProto: map[string]func(*http.Server, *tls.Conn, http.Handler){},
 	}
-	log.Printf("Started https proxy server on port %s", config.ProxyPortTLS)
+	log.Printf("Started https proxy server on port %s", config.ProxyPort)
 	go proxySrv.ListenAndServeTLS(config.CertFile, config.KeyFile)
 
 	// Admin console:
-	adminMux := http.NewServeMux()
-	ctrl.RegisterHandlers(adminMux)
-	log.Printf("Started web admin console on port %s\n", config.AdminPortTLS)
-	go admConsoleSrv(config)
+	controlSrv := http.Server{
+		Addr:         config.AdminPort,
+		Handler:      http.HandlerFunc(ctrl.CtrlHandler),
+		TLSNextProto: map[string]func(*http.Server, *tls.Conn, http.Handler){},
+	}
+	log.Printf("Admin console started on port %s\n", config.AdminPort)
+	go controlSrv.ListenAndServeTLS(config.CertFile, config.KeyFile)
 
 	// WEB Server:
-	select {} // Блокуємо основний потік
-}
-
-func admConsoleSrv(conf config.Config) {
-	err := http.ListenAndServeTLS(
-		conf.AdminPortTLS,
-		conf.CertFile,
-		conf.KeyFile,
-		http.HandlerFunc(
-			func(w http.ResponseWriter, r *http.Request) {
-				ctrl.PagesHandler(w, r)
-			}))
-	if err != nil {
-		log.Printf("TLS Server error: %v", err)
-	} else {
-		log.Printf("TLS Server started.")
+	webSrv := http.Server{
+		Addr:         config.WebPort,
+		Handler:      http.HandlerFunc(web.WebPagesHandler),
+		TLSNextProto: map[string]func(*http.Server, *tls.Conn, http.Handler){},
 	}
+	log.Printf("Web started on %s\n\n", config.WebPort)
+	go webSrv.ListenAndServeTLS(config.CertFile, config.KeyFile)
+
+	select {} // Блокуємо основний потік
 }

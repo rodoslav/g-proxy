@@ -7,7 +7,7 @@ import (
 )
 
 // Make handlers for all html pages
-func PagesHandler(w http.ResponseWriter, req *http.Request) {
+func WebPagesHandler(w http.ResponseWriter, req *http.Request) {
 	switch req.URL.Path {
 	case "/": // For index.html
 		renderTemplate(w, "index.html")

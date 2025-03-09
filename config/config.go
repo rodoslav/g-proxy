@@ -7,12 +7,11 @@ import (
 )
 
 type Config struct {
-	ProxyPort    string
-	ProxyPortTLS string
-	AdminPort    string
-	AdminPortTLS string
-	CertFile     string
-	KeyFile      string
+	ProxyPort string
+	AdminPort string
+	WebPort   string
+	CertFile  string
+	KeyFile   string
 }
 
 func LoadConfig(filename string) (Config, error) {

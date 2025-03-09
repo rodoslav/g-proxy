@@ -1,8 +1,7 @@
 {
-    "ProxyPort":":8080",
-    "ProxyPortTLS": ":8443",
-    "AdminPort":":9090",
-    "AdminPortTLS":":9443",
+    "ProxyPort": ":8443",
+    "AdminPort": ":9443",
+    "WebPort":   ":8080",
     "CertFile": "/home/rodoslav_sk/ca/proxy.local.crt.pem",
     "KeyFile": "/home/rodoslav_sk/ca/device.key.pem"
 }
