@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	// Завантажуємо конфігурацію з файлу
+	// Load config from JSON
 	config, err := config.LoadConfig("config/config.json")
 	if err != nil {
 		log.Fatalf("Loading config file error: %v", err)
@@ -44,5 +44,5 @@ func main() {
 	log.Printf("Web started on %s\n\n", config.WebPort)
 	go webSrv.ListenAndServeTLS(config.CertFile, config.KeyFile)
 
-	select {} // Блокуємо основний потік
+	select {} // Block Main flow
 }

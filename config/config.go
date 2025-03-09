@@ -20,8 +20,9 @@ func LoadConfig(filename string) (Config, error) {
 	if err != nil {
 		file.Close()
 		var config Config
-		config.ProxyPort = ":8080"
+		config.ProxyPort = ":8443"
 		config.AdminPort = ":9090"
+		config.WebPort = ":8080"
 		error := SaveConfig(filename, config)
 		if error != nil {
 			// Log to file
