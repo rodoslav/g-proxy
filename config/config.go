@@ -2,12 +2,17 @@ package config
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 )
 
 type Config struct {
-	ProxyPort string
-	AdminPort string
+	ProxyPort    string
+	ProxyPortTLS string
+	AdminPort    string
+	AdminPortTLS string
+	CertFile     string
+	KeyFile      string
 }
 
 func LoadConfig(filename string) (Config, error) {
@@ -17,10 +22,11 @@ func LoadConfig(filename string) (Config, error) {
 		file.Close()
 		var config Config
 		config.ProxyPort = ":8080"
-		config.AdminPort = ":8008"
+		config.AdminPort = ":9090"
 		error := SaveConfig(filename, config)
 		if error != nil {
 			// Log to file
+			log.Fatalf("Error, Can`t create %s\n%v", filename, error)
 		}
 		return Config{}, err
 	}

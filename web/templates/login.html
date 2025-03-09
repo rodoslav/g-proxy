@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin console</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1 style="text-align: center; margin-top: 50px;">Login</h1>
+    </header>
+    <main>
+    <!--
+        <form method="post" id="login" action="auth/" style="align-content: center;">
+            <label>Login</label>
+            <input type="text" id="nickname" name="nickname" required value="Tipe login here">
+            <label>Password</label>
+            <input type="password" id="passwd" name="passwd" required onfocus="">
+            <button type="submit" class=".btn-primary">Login</button>
+            <button type="submit" class=".btn-success">Signup</button>
+        </form>
+    -->
+        <div class="container text-center mt-1">
+            <h2></h2>
+            <form method="post" id="login" action="auth">
+                <div class="form-group">
+                    <input type="email" class="form-control" id="login" placeholder="Login" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-control" id="passwd" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn btn-primary bg-primary" style="width: 70%; margin: 5px;">Login</button>
+            </form>
+            <a href="/register" class="btn btn-success bg-success" style="width: 70%; margin: 5px;">or Sign-up</a>
+        </div>
+    
+    </main>
+    <footer>
+        <p style="text-align: right; padding: 30px;">&copy; 2025 RuvChain</p>
+    </footer>
+</body>
+</html>

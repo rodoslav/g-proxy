@@ -1,0 +1,94 @@
+package proxy
+
+import (
+	"crypto/tls"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/go-acme/lego/v4"
+	"github.com/go-acme/lego/v4/certcrypto"
+	"github.com/go-acme/lego/v4/certificate"
+	"github.com/go-acme/lego/v4/registration"
+)
+
+func main() {
+	// Створюємо клієнта ACME
+	config := lego.NewConfig("you@example.com")
+	config.CADirURL = "https://acme-v02.api.letsencrypt.org/directory"
+	config.Certificate.ObtainKey = true
+
+	client, err := lego.NewClient(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Використовуємо DNS-01 челендж для домену
+	err = client.Challenge.SetDNS01Provider(
+		newDNSProvider(), // Створи власний DNS провайдер або використовуй існуючий
+		dns01.DisablePropagationChecking(),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Реєструємо клієнта
+	reg, err := client.Registration.Register(registration.RegisterOptions{
+		Email:                "you@example.com",
+		TermsOfServiceAgreed: true,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	client.Registration = reg
+
+	// Отримуємо сертифікат
+	request := certificate.ObtainRequest{
+		Domain:         "yourdomain.com",
+		Bundle:         true,
+		MustStaple:     false,
+		PreferredChain: "ISRG Root X1",
+	}
+	certificates, err := client.Certificate.Obtain(request)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Запускаємо HTTPS сервер
+	go func() {
+		server := &http.Server{
+			Addr: ":443",
+			TLSConfig: &tls.Config{
+				GetCertificate: func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
+					return certcrypto.TLSCertFromCerts(certificates.Certificate, certificates.Issuer)
+				},
+			},
+			Handler: http.NewServeMux(),
+		}
+		log.Println("Starting HTTPS server on :443")
+		if err := server.ListenAndServeTLS("", ""); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	// Автоматичне оновлення сертифікатів
+	go func() {
+		for {
+			time.Sleep(12 * time.Hour) // Перевіряємо кожні 12 годин
+			certificates, err = client.Certificate.Renew(certificates, true, false, "")
+			if err != nil {
+				log.Println("Failed to renew certificate:", err)
+			} else {
+				log.Println("Certificate renewed successfully")
+			}
+		}
+	}()
+
+	// Запускаємо HTTP сервер для перенаправлення на HTTPS
+	log.Println("Starting HTTP server on :80")
+	if err := http.ListenAndServe(":80", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "https://"+r.Host+r.URL.String(), http.StatusMovedPermanently)
+	})); err != nil {
+		log.Fatal(err)
+	}
+}
