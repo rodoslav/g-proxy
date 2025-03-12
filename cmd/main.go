@@ -24,7 +24,7 @@ func main() {
 		TLSNextProto: map[string]func(*http.Server, *tls.Conn, http.Handler){},
 	}
 	log.Printf("Started https proxy server on port %s", config.ProxyPort)
-	go proxySrv.ListenAndServeTLS(config.CertFile, config.KeyFile)
+	go startServeTLS(&proxySrv, config)
 
 	// Admin console:
 	controlSrv := http.Server{
@@ -33,7 +33,7 @@ func main() {
 		TLSNextProto: map[string]func(*http.Server, *tls.Conn, http.Handler){},
 	}
 	log.Printf("Admin console started on port %s\n", config.AdminPort)
-	go controlSrv.ListenAndServeTLS(config.CertFile, config.KeyFile)
+	go startServeTLS(&controlSrv, config)
 
 	// WEB Server:
 	webSrv := http.Server{
@@ -42,7 +42,14 @@ func main() {
 		TLSNextProto: map[string]func(*http.Server, *tls.Conn, http.Handler){},
 	}
 	log.Printf("Web started on %s\n\n", config.WebPort)
-	go webSrv.ListenAndServeTLS(config.CertFile, config.KeyFile)
+	go startServeTLS(&webSrv, config)
 
 	select {} // Block Main flow
+}
+
+func startServeTLS(srv *http.Server, cfg config.Config) {
+	err := srv.ListenAndServeTLS(cfg.CertFile, cfg.KeyFile)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
